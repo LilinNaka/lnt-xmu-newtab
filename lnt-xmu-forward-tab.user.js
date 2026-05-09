@@ -178,7 +178,9 @@
     // 4. <a> 标签
     if (!url) {
       console.log('[lnt] Finder4 e.target:', e.target.tagName, e.target.className.slice(0,60));
-      var anchor = target.closest('a');
+      console.log('[lnt] Finder4 target === e.target:', target === e.target);
+      console.log('[lnt] Finder4 target:', target ? target.tagName + ' ' + target.className : 'undefined');
+      var anchor = target ? target.closest('a') : null;
       console.log('[lnt] Finder4 anchor:', anchor ? anchor.tagName + ' ' + anchor.className + ' href=' + anchor.href : 'null');
       url = findUrlFromAnchor(target);
     }
