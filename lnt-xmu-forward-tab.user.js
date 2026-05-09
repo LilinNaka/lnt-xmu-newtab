@@ -131,6 +131,12 @@
     return null;
   }
 
+  function findUrlFromTodoLink(element) {
+    var link = element.closest('.todo-link');
+    if (link && link.href) return link.href;
+    return null;
+  }
+
   function findUrlFromDataAttrs(element) {
     var walk = element;
     while (walk && walk !== document.documentElement) {
@@ -176,14 +182,10 @@
     }
 
     // 4. <a> 标签
-    if (!url) {
-      console.log('[lnt] Finder4 e.target:', e.target.tagName, e.target.className.slice(0,60));
-      console.log('[lnt] Finder4 target === e.target:', target === e.target);
-      console.log('[lnt] Finder4 target:', target ? target.tagName + ' ' + target.className : 'undefined');
-      var anchor = target ? target.closest('a') : null;
-      console.log('[lnt] Finder4 anchor:', anchor ? anchor.tagName + ' ' + anchor.className + ' href=' + anchor.href : 'null');
-      url = findUrlFromAnchor(target);
-    }
+    if (!url) url = findUrlFromAnchor(target);
+
+    // 4.5 todo-link
+    if (!url) url = findUrlFromTodoLink(target);
 
     // 5. onclick 属性
     if (!url) url = findUrlFromOnclick(target);
