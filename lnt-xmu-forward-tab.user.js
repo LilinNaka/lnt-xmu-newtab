@@ -165,6 +165,15 @@
     var url;
     var target = e.target;
 
+    // 诊断父级链
+    var el = target;
+    var chain = [];
+    while(el && el !== document.documentElement) {
+      chain.push(el.tagName + '.' + (el.className||'').replace(/\s+/g,'.').slice(0,25));
+      el = el.parentElement;
+    }
+    console.log('[lnt] 父级链:', chain.join(' -> '));
+
     // 1. AngularJS activity
     var activity = findActivity(target);
     if (activity) {
