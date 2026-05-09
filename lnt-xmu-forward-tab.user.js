@@ -193,6 +193,7 @@
     // 6. data-* 属性
     if (!url) url = findUrlFromDataAttrs(target);
 
+    console.log('[lnt] 最终 url:', url);
     if (url) {
       var newTab = window.open(url, '_blank');
       if (newTab) {
