@@ -132,14 +132,19 @@
   }
 
   function findUrlFromTodoLink(element) {
-    // 从被点击元素往上找 .todo-item，然后找它的兄弟 <a class="todo-link">
+    // 从被点击元素往上找 .todo-item，然后找它的直接子元素中的 <a class="todo-link">
     var todoItem = element.closest('.todo-item');
     if (!todoItem) return null;
-    var siblings = todoItem.parentElement ? Array.from(todoItem.parentElement.children) : [];
-    for (var i = 0; i < siblings.length; i++) {
-      var s = siblings[i];
-      if (s.tagName === 'A' && s.className && s.className.indexOf('todo-link') !== -1 && s.href) {
-        return s.href;
+    var children = Array.from(todoItem.children);
+    for (var i = 0; i < children.length; i++) {
+      var c = children[i];
+      if (c.tagName === 'A' && c.className && c.className.indexOf('todo-link') !== -1 && c.href) {
+        return c.href;
+      }
+      // 也检查 c 的子元素
+      var sub = c.querySelectorAll ? c.querySelectorAll('a.todo-link') : [];
+      for (var j = 0; j < sub.length; j++) {
+        if (sub[j].href) return sub[j].href;
       }
     }
     return null;
