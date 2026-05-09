@@ -132,8 +132,13 @@
   }
 
   function findUrlFromTodoLink(element) {
-    var link = element.closest('.todo-link');
-    if (link && link.href) return link.href;
+    var el = element;
+    while (el && el !== document.documentElement) {
+      if (el.tagName === 'A' && el.className && el.className.indexOf('todo-link') !== -1 && el.href) {
+        return el.href;
+      }
+      el = el.parentElement;
+    }
     return null;
   }
 
