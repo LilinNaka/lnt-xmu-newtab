@@ -5,6 +5,7 @@ Tampermonkey 用户脚本。点击 `lnt.xmu.edu.cn` 上的内部链接时，在�
 ## 效果
 
 - 用户首页：课程卡片 → 新标签页打开
+- 用户首页：待办快捷入口（.todo-link）→ 新标签页打开
 - 课程详情页：课件/任务列表 → 新标签页打开
 - 课程首页：任务列表（板书/作业/测试等） → 新标签页打开
 - 其他：有 `<a href>` 的链接正常工作
@@ -31,6 +32,15 @@ Tampermonkey 用户脚本。点击 `lnt.xmu.edu.cn` 上的内部链接时，在�
 | Vue 和 AngularJS 混在一起 | 没有统一读取入口，只能逐个页面类型挖掘 |
 | 网站不用 `<a>` 标签 | 所有导航都是 `<div>` + JS onclick，右键没有"在新标签页打开" |
 
+## 关于 todo-link 的查找过程
+
+用户首页的待办快捷入口（`.todo-link`）是 `<a>` 标签，包含在 `.todo-item` 里。点击时，实际触发的是 SPAN 上的事件，事件冒泡到父级后由 Vue 的事件委托处理。
+
+排查过程耗时很长，因为：
+1. SPAN 的 DOM 祖先链里没有 `<a>` 标签——`<a class="todo-link">` 和 SPAN 是 `.todo-item` 下的兄弟节点，不是父子关系
+2. `closest('a')` 在 SPAN 上始终返回 null，因为 `<a>` 不是 SPAN 的祖先
+3. 需要手动从 `.todo-item` 的 children 里查找 `<a class="todo-link">`，而不是用 `closest()`
+
 ## 多策略 Finder 优先级
 
 1. AngularJS scope → `activity.id` + `course.id` → `/course/{id}/learning-activity#{aid}`
@@ -38,7 +48,8 @@ Tampermonkey 用户脚本。点击 `lnt.xmu.edu.cn` 上的内部链接时，在�
 3. Vue `.study-tasks` → `displayGroup.ongoing[n].id` → `/course/{id}/learning-activity#{tid}`
 4. `<a>` 标签
 5. onclick 属性
-6. data-* 属性
+6. Vue `.todo-item` → 找兄弟 `<a class="todo-link">`（Vue 事件委托，`<a>` 不在点击元素的祖先链上）
+7. data-* 属性
 
 ## 协议
 

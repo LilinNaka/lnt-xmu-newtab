@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         lnt.xmu.edu.cn 新标签页打开
 // @namespace    https://github.com/LilinNaka/lnt-xmu-newtab
-// @version      6.2
+// @version      6.3
 // @description  多策略 URL 发现：AngularJS scope + Vue 课程卡片 + Vue 任务列表 + <a> + onclick + data-*
 // @match        *://lnt.xmu.edu.cn/*
 // @run-at       document-end
@@ -131,8 +131,12 @@
     return null;
   }
 
+  // ─── Finder 5: Vue todo-link（用户首页待办快捷入口）────────────────
+
+  // .todo-link 是 <a> 标签，但不是 SPAN 的祖先，而是 .todo-item 的子元素
+  // Vue 用事件委托，点击 SPAN 时事件冒泡到父级 handler，closest('a') 找不到
+  // 所以从 .todo-item 的 children 里找 <a class="todo-link">
   function findUrlFromTodoLink(element) {
-    // 从被点击元素往上找 .todo-item，然后找它的直接子元素中的 <a class="todo-link">
     var todoItem = element.closest('.todo-item');
     if (!todoItem) return null;
     var children = Array.from(todoItem.children);
@@ -141,7 +145,6 @@
       if (c.tagName === 'A' && c.className && c.className.indexOf('todo-link') !== -1 && c.href) {
         return c.href;
       }
-      // 也检查 c 的子元素
       var sub = c.querySelectorAll ? c.querySelectorAll('a.todo-link') : [];
       for (var j = 0; j < sub.length; j++) {
         if (sub[j].href) return sub[j].href;
@@ -173,18 +176,6 @@
     var url;
     var target = e.target;
 
-    // 诊断父级链
-    var el = target;
-    var chain = [];
-    while(el && el !== document.documentElement) {
-      chain.push(el.tagName + '.' + (el.className||'').replace(/\s+/g,'.').slice(0,25));
-      if(el.className && el.className.indexOf('todo-link') > -1) {
-        console.log('[lnt] found todo-link in chain:', el.tagName, el.className, el.href);
-      }
-      el = el.parentElement;
-    }
-    console.log('[lnt] 父级链:', chain.join(' -> '));
-
     // 1. AngularJS activity
     var activity = findActivity(target);
     if (activity) {
@@ -207,25 +198,17 @@
     }
 
     // 4. <a> 标签
-    if (!url) {
-      var anchor = target.closest('a');
-      console.log('[lnt] Finder4 anchor check:', anchor ? 'found, href=' + anchor.href + ', class=' + anchor.className : 'null');
-      url = findUrlFromAnchor(target);
-    }
-
-    // 4.5 todo-link
-    if (!url) {
-      console.log('[lnt] Finder4.5 todo-link check, target:', target.tagName, target.className);
-      url = findUrlFromTodoLink(target);
-    }
+    if (!url) url = findUrlFromAnchor(target);
 
     // 5. onclick 属性
     if (!url) url = findUrlFromOnclick(target);
 
-    // 6. data-* 属性
+    // 6. Vue todo-link
+    if (!url) url = findUrlFromTodoLink(target);
+
+    // 7. data-* 属性
     if (!url) url = findUrlFromDataAttrs(target);
 
-    console.log('[lnt] 最终 url:', url);
     if (url) {
       var newTab = window.open(url, '_blank');
       if (newTab) {
