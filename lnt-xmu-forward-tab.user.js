@@ -132,12 +132,15 @@
   }
 
   function findUrlFromTodoLink(element) {
-    var el = element;
-    while (el && el !== document.documentElement) {
-      if (el.tagName === 'A' && el.className && el.className.indexOf('todo-link') !== -1 && el.href) {
-        return el.href;
+    // 从被点击元素往上找 .todo-item，然后找它的兄弟 <a class="todo-link">
+    var todoItem = element.closest('.todo-item');
+    if (!todoItem) return null;
+    var siblings = todoItem.parentElement ? Array.from(todoItem.parentElement.children) : [];
+    for (var i = 0; i < siblings.length; i++) {
+      var s = siblings[i];
+      if (s.tagName === 'A' && s.className && s.className.indexOf('todo-link') !== -1 && s.href) {
+        return s.href;
       }
-      el = el.parentElement;
     }
     return null;
   }
@@ -170,6 +173,9 @@
     var chain = [];
     while(el && el !== document.documentElement) {
       chain.push(el.tagName + '.' + (el.className||'').replace(/\s+/g,'.').slice(0,25));
+      if(el.className && el.className.indexOf('todo-link') > -1) {
+        console.log('[lnt] found todo-link in chain:', el.tagName, el.className, el.href);
+      }
       el = el.parentElement;
     }
     console.log('[lnt] 父级链:', chain.join(' -> '));
