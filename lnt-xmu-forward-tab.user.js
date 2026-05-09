@@ -176,7 +176,11 @@
     }
 
     // 4. <a> 标签
-    if (!url) url = findUrlFromAnchor(target);
+    if (!url) {
+      var anchor = target.closest('a');
+      console.log('[lnt] Finder4 anchor:', anchor ? anchor.tagName + ' ' + anchor.className + ' href=' + anchor.href : 'null');
+      url = findUrlFromAnchor(target);
+    }
 
     // 5. onclick 属性
     if (!url) url = findUrlFromOnclick(target);
